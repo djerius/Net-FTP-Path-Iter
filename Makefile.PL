@@ -7,6 +7,10 @@ license 'gpl3';
 auto_license( holder => 'Smithsonian Astrophysical Observatory' );
 all_from 'lib/Net/FTP/Rule.pm';
 
+requires 'Net::FTP';
+requires 'File::Listing';
+requires 'Path::Iterator::Rule';
+
 author_tests( 'xt' );
 author_requires 'Test::NoBreakpoints';
 author_requires 'Test::Pod';
