@@ -22,7 +22,10 @@ perldoc command.
 
 DEPENDENCIES
 
-None.
+	THIS REQUIRES A HACKED VERSION OF Path::Iterator::Rule to
+	remove explicit stringification.
+
+	see no-explicit-stringify.patch
 
 COPYRIGHT AND LICENCE
 
