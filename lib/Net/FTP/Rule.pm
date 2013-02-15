@@ -143,7 +143,7 @@ use File::Spec::Functions qw[ catfile catdir splitpath];
         croak( "multiple records for ", $self->path, "\n" )
           if @$entries > 1;
 
-        my $entry = grep { $self->{name} eq $_->[0] } @$entries;
+        my ( $entry ) = grep { $self->{name} eq $_->[0] } @$entries;
 
         croak( "unable to find attributes for ", $self->path, "\n" )
           if !$entry;
