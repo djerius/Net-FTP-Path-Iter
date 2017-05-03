@@ -27,6 +27,22 @@ use Class::Tiny qw[
   name type size mtime mode parent server path
   ], { _has_attrs => 0 };
 
+=begin pod_coverage
+
+=head3 BUILD
+
+=end pod_coverage
+
+=cut
+
+
+sub BUILD {
+
+    my $self = shift;
+    $self->_retrieve_attrs
+      unless $self->_has_attrs;
+}
+
 sub _statit {
 
     my $self = shift;
