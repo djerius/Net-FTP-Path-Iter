@@ -29,8 +29,6 @@ sub _retrieve_attrs {
     my $self = shift;
     return if $self->_has_attrs;
 
-    my $server = $self->server;
-
     my ( $entry ) = my @entries = grep $self->name eq $_->{name},
       $self->get_entries( $self->parent );
 
