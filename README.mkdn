@@ -1,0 +1,83 @@
+# NAME
+
+Net::FTP::Rule - Iterative, recursive, FTP file finder
+
+# VERSION
+
+version 0.01
+
+# SYNOPSIS
+
+    use Net::FTP::Rule;
+
+    # connect to the FTP site
+    my $ftp = Net::FTP::Rule->new( $ftp_site, $user, $password );
+
+    # define a visitor callback routine. It will recieve a
+    # Net::FTP::Rule::Entry object.
+    sub visitor { my ($entry) = @_ }
+
+    # use the Path::Iterator::Rule all() method to traverse the
+    # site;
+    $ftp->all( '/', \&visitor );
+
+# DESCRIPTION
+
+**Net::FTP::Rule** is a subclass of [Path::Iterator::Rule](https://metacpan.org/pod/Path::Iterator::Rule) which
+iterates over an FTP site rather than a local filesystem.
+
+See the documentation [Path::Iterator::Rule](https://metacpan.org/pod/Path::Iterator::Rule) for how to filter and
+traverse paths.  When **Net::FTP::Rule** passes a path to a callback or
+returns one from an iterator, it will be in the form of a
+[Net::FTP::Rule::Entry](https://metacpan.org/pod/Net::FTP::Rule::Entry) object.
+
+**Net::FTP::Rule** uses [Net::FTP](https://metacpan.org/pod/Net::FTP) to connect to the FTP site.
+
+## Symbolic Links
+
+At present, **Net::FTP::Rule** does not handle symbolic links. It will
+output an error and skip them.
+
+# METHODS
+
+## new
+
+    $ftp = Net::FTP::Rule->new( [$host], %options );
+
+Open up a connection to an FTP host and log in.  The arguments
+are the same as for ["new" in Net::FTP](https://metacpan.org/pod/Net::FTP#new), with the addition of two
+mandatory options,
+
+- `user`
+
+    The user name
+
+- `password`
+
+    The password
+
+# ATTRIBUTES
+
+**Net::FTP::Rule** subclasses [Path::Iter::Rule](https://metacpan.org/pod/Path::Iter::Rule). It is a hash based object
+and has the following additional attributes:
+
+- `server`
+
+    The **Net::FTP** object representing the connection to the FTP server.
+
+# BUGS AND LIMITATIONS
+
+You can make new bug reports, and view existing ones, through the
+web interface at [https://rt.cpan.org/Public/Dist/Display.html?Name=Net-FTP-Rule](https://rt.cpan.org/Public/Dist/Display.html?Name=Net-FTP-Rule).
+
+# AUTHOR
+
+Diab Jerius <djerius@cpan.org>
+
+# COPYRIGHT AND LICENSE
+
+This software is Copyright (c) 2017 by Smithsonian Astrophysical Observatory.
+
+This is free software, licensed under:
+
+    The GNU General Public License, Version 3, June 2007

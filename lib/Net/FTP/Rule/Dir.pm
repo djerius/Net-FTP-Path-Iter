@@ -1,0 +1,138 @@
+package Net::FTP::Rule::Dir;
+
+# ABSTRACT: Class representing a Directory
+
+use 5.010;
+use strict;
+use warnings;
+use experimental 'switch';
+
+our $VERSION = '0.01';
+
+use Carp;
+use Fcntl qw[ :mode ];
+
+use File::Spec::Functions qw[ catdir catfile ];
+
+use namespace::clean;
+
+use parent 'Net::FTP::Rule::Entry';
+
+use Net::FTP::Rule::File;
+
+use constant is_file => 0;
+use constant is_dir  => 1;
+
+sub _children {
+
+    my $self = shift;
+
+    my %attr = ( server => $self->server, );
+
+    my $entries = $self->_get_entries( $self->path );
+
+    my @children;
+
+    for my $entry ( @$entries ) {
+
+        my $obj;
+
+        for ( $entry->{type} ) {
+
+            when ( 'd' ) {
+
+                $obj = Net::FTP::Rule::Dir->new( %$entry, %attr,
+                    path => catdir( $self->path, $entry->{name} ) );
+            }
+
+            when ( 'f' ) {
+
+                $obj = Net::FTP::Rule::File->new( %$entry, %attr,
+                    path => catfile( $self->path, $entry->{name} ) );
+            }
+
+            default {
+
+                warn( "ignoring $entry->{name}; unknown type $_\n" );
+            }
+
+        }
+
+        push @children, $obj;
+    }
+
+    return @children;
+
+}
+
+# if an entity doesn't have attributes, it didn't get loaded
+# from a directory listing.  Try to get one.  This should
+# happen rarely, so do this slowly but correctly.
+sub _retrieve_attrs {
+
+    my $self = shift;
+
+    return if $self->_has_attrs;
+
+    my $server = $self->server;
+
+    my $pwd = $server->pwd;
+
+    my $entry = {};
+
+    $server->cwd( $self->path )
+      or croak( "unable to chdir to ", $self->path, "\n" );
+
+    # File::Listing doesn't return . or .. (and some FTP servers
+    # don't return that info anyway), so try to go up a dir and
+    # look for the name
+    eval {
+
+        # cdup sometimes returns ok even if it didn't work
+        $server->cdup;
+
+        if ( $pwd ne $server->pwd ) {
+
+            my $entries = $self->_get_entries( '.' );
+
+            ( $entry ) = grep { $self->name eq $_->{name} } @$entries;
+
+            croak( "unable to find attributes for ", $self->path, "\n" )
+              if !$entry;
+
+            croak( $self->path, ": expected directory, got $entry->{type}\n" )
+              unless $entry->type eq 'd';
+
+        }
+
+        # couldn't go up a directory; at the top?
+        else {
+
+            # fake it.
+
+            $entry = {
+                size  => 0,
+                mtime => 0,
+                mode  => S_IRUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH
+                  | S_IXOTH,
+                type => 'd',
+                _has_attrs => 1,
+            };
+
+        }
+
+    };
+
+    my $err = $@;
+
+    $server->cwd( $pwd )
+      or croak( "unable to return to directory: $pwd\n" );
+
+    croak( $err ) if $err;
+
+    $self->$_( $entry->{$_} ) for keys %$entry;
+    return;
+}
+
+# COPYRIGHT
+1;

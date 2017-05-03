@@ -1,26 +1,8 @@
-# --8<--8<--8<--8<--
-#
-# Copyright (C) 2013 Smithsonian Astrophysical Observatory
-# This file is part of Net::FTP::Rule
-#
-# Net::FTP::Rule is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or (at
-# your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-# -->8-->8-->8-->8--
-
 package Net::FTP::Rule;
 
-use 5.12.0;
+# ABSTRACT: Iterative, recursive, FTP file finder
+
+use 5.010;
 
 use strict;
 use warnings;
@@ -28,322 +10,119 @@ use Carp;
 
 our $VERSION = '0.01';
 
-use parent 'Path::Iterator::Rule';
 use Net::FTP;
-use Net::FTP::File;
-use File::Spec::Functions qw[ catfile catdir splitpath];
+use File::Spec::Functions qw[ splitpath ];
 
-{
+use parent 'Path::Iterator::Rule';
 
-    package Net::FTP::Rule::Entity;
+use Net::FTP::Rule::Dir;
 
-    use 5.12.0;
-    use Carp;
+use namespace::clean;
 
-    use File::Listing qw[ parse_dir ];
-    use Fcntl ':mode';
+=method new
 
-    sub new {
+  $ftp = Net::FTP::Rule->new( [$host], %options );
 
-        my $class = shift;
+Open up a connection to an FTP host and log in.  The arguments
+are the same as for L<Net::FTP/new>, with the addition of two
+mandatory options,
 
-        my %attr = 'HASH' eq ref $_[0] ? %{ $_[0] } : @_;
+=over
 
-        return bless \%attr, $class
+=item C<user>
 
-    }
+The user name
 
-    use overload
-      '-X'   => 'statit',
-      'bool' => sub { 1 },
-      '""'   => sub { $_[0]->path },
-      ;
+=item C<password>
 
-    sub statit {
+The password
 
-        my $self = shift;
-        my $op   = shift;
+=back
 
-        for ($op) {
+=cut
 
-            when ('d') { return $self->is_dir }
-
-            when ('f') { return $self->is_file }
-
-            when ('s') { return $self->{size} }
-
-            when ('z') { return $self->{size} != 0 }
-
-            when ('r') { return S_IROTH & $self->{mode} }
-
-            when ('R') { return S_IROTH & $self->{mode} }
-
-            default { croak("unsupported file test: -$op\n") }
-
-        }
-
-    }
-
-    sub get_attr {
-
-        my ( $self, $path, my %attr ) = @_;
-
-        my $listing = $self->{server}->dir($path)
-          or die("error listing $path");
-
-        my @entries;
-        for my $entry ( parse_dir($listing) ) {
-
-            my %lattr = %attr;
-
-            @lattr{qw[ name type size mtime mode]} = @$entry;
-
-            push @entries, \%lattr;
-
-        }
-
-        return \@entries;
-
-    }
-
-}
-
-{
-
-    package Net::FTP::Rule::File;
-    use strict;
-    use warnings;
-
-    use Carp;
-
-    use parent -norequire, 'Net::FTP::Rule::Entity';
-
-    use constant is_file => 1;
-    use constant is_dir  => 0;
-
-    use File::Spec::Functions qw[ catfile ];
-
-    sub path {
-
-        my $self = shift;
-
-        $self->{path} //= catfile( $self->{dir}->path, $self->{name} );
-
-        return $self->{path};
-    }
-
-    # if an entity doesn't have attributes, it didn't get loaded
-    # from a directory listing.  Try to get one.
-    sub attrs {
-
-        my $self   = shift;
-        my $server = $self->{server};
-
-        my $entries = $self->get_attr( $self->path );
-        croak( "multiple records for ", $self->path, "\n" )
-          if @$entries > 1;
-
-        my ( $entry ) = grep { $self->{name} eq $_->[0] } @$entries;
-
-        croak( "unable to find attributes for ", $self->path, "\n" )
-          if !$entry;
-
-        croak( $self->path, ": expected file, got $entry->{type}\n" )
-          unless $entry->{type} eq 'f';
-
-        %$self = ( %$entry, %$self );
-
-        return;
-    }
-
-}
-
-{
-
-    package Net::FTP::Rule::Dir;
-    use strict;
-    use warnings;
-
-    use Carp;
-
-    use parent -norequire, 'Net::FTP::Rule::Entity';
-
-    use constant is_file => 0;
-    use constant is_dir  => 1;
-
-    use Fcntl ':mode';
-
-    use File::Spec::Functions qw[ catdir splitdir ];
-
-    sub path {
-
-        my $self = shift;
-
-        $self->{path} //= catdir( $self->{dir}->path, $self->{name} );
-
-        return $self->{path};
-    }
-
-    sub children {
-
-        my ($self) = @_;
-
-        my $entries = $self->get_attr(
-            $self->path,
-            dir    => $self,
-            server => $self->{server}
-        );
-
-        my @children;
-
-        for my $entry (@$entries) {
-
-            my $obj;
-
-            for ( $entry->{type} ) {
-
-                when ('d') {
-
-                    $obj = Net::FTP::Rule::Dir->new($entry);
-                }
-
-                when ('f') {
-
-                    $obj = Net::FTP::Rule::File->new($entry);
-
-                }
-
-                default {
-
-                    warn("ignoring $entry->{name}; unknown type $_\n");
-
-                }
-
-            }
-
-            push @children, $obj;
-        }
-
-        return @children;
-
-    }
-
-    # if an entity doesn't have attributes, it didn't get loaded
-    # from a directory listing.  Try to get one.  This should
-    # happen rarely, so do this slowly but correctly.
-    sub attrs {
-
-        my $self   = shift;
-        my $server = $self->{server};
-
-        my $pwd = $server->pwd;
-
-        my $entry = {};
-
-        $server->cwd( $self->path )
-          or croak( "unable to chdir to ", $self->path, "\n" );
-
-        # File::Listing doesn't return . or .. (and some FTP servers
-        # don't return that info anyway), so try to go up a dir and
-        # look for the name
-        eval {
-
-            # cdup sometimes returns ok even if it didn't work
-            $server->cdup;
-
-            if ( $pwd ne $server->pwd ) {
-
-                my $entries = $self->get_attr('.');
-
-                ($entry) = grep { $self->{name} eq $_->{name} } @$entries;
-
-                croak( "unable to find attributes for ", $self->path, "\n" )
-                  if !$entry;
-
-                croak( $self->path,
-                    ": expected directory, got $entry->{type}\n" )
-                  unless $entry->{type} eq 'd';
-
-            }
-
-            # couldn't go up a directory; at the top?
-            else {
-
-                # fake it.
-
-                $entry = {
-                    size  => 0,
-                    mtime => 0,
-                    mode  => S_IRUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH |
-                      S_IXOTH
-                };
-
-            }
-
-        };
-
-        my $err = $@;
-
-        $server->cwd($pwd)
-          or croak("unable to return to directory: $pwd\n");
-
-        croak($err) if $err;
-
-        %$self = ( %$entry, %$self );
-
-        return;
-    }
-
-}
 
 sub new {
 
     my $class = shift;
 
-    my ( $server, $user, $password ) = @_;
+    my %attr;
+    if (@_ % 2) {
+        my $host = shift;
+        %attr  = @_;
+        $attr{Host} = $host;
+    }
+    else {
+        %attr = @_;
+    }
 
     my $self = $class->SUPER::new();
 
-    $self->{server} = Net::FTP->new($server)
-      or die("unable to connect to server $server\n");
+    defined( my $host = delete $attr{Host} )
+      or croak( "missing Host attribute\n" );
+
+    defined( my $user = delete $attr{user} )
+      or croak( "missing user attribute\n" );
+
+    defined( my $password = delete $attr{password} )
+      or croak( "missing password attribute\n" );
+
+    $self->{server} = Net::FTP->new($host, %attr)
+      or croak("unable to connect to server $host\n");
 
     $self->{server}->login( $user, $password )
-      or die("unable to log in to $server\n");
+      or croak("unable to log in to $host\n");
 
     return $self;
+}
+
+sub _defaults {
+    return (
+        _stringify      => 0,
+        follow_symlinks => 1,
+        depthfirst      => 0,
+        sorted          => 1,
+        loop_safe       => 0,
+        error_handler   => sub { die sprintf( "%s: %s", @_ ) },
+        visitor         => undef,
+    );
+}
+
+sub _fast_defaults {
+
+    return (
+        _stringify      => 0,
+        follow_symlinks => 1,
+        depthfirst      => -1,
+        sorted          => 0,
+        loop_safe       => 0,
+        error_handler   => undef,
+        visitor         => undef,
+    );
 }
 
 sub _objectify {
 
     my ( $self, $path ) = @_;
 
-    my ( $volume, $directories, $file ) = splitpath($path);
+    my ( $volume, $directories, $name ) = splitpath($path);
 
     $directories =~ s{(.+)/$}{$1};
 
     my %attr = (
-        dir  => $directories,
-        name => $file,
+        parent  => $directories,
+        name => $name,
         path => $path,
     );
 
-    my $object =
-      $self->{server}->isdir($path)
-      ? Net::FTP::Rule::Dir->new( server => $self->{server}, %attr )
-      : Net::FTP::Rule::File->new( server => $self->{server}, %attr );
-
-    $object->attrs;
-
-    return $object;
-
+    return Net::FTP::Rule::Dir->new( server => $self->{server}, %attr );
 }
 
 sub _children {
 
     my ( $self, $path ) = @_;
 
-    return map { [ $_->{name}, $_ ] } $path->children;
-
+    return map { [ $_->{name}, $_ ] } $path->_children;
 }
 
 sub _iter {
@@ -359,141 +138,55 @@ sub _iter {
 
 1;
 
+# COPYRIGHT
+
 __END__
-
-=head1 NAME
-
-Net::FTP::Rule - [One line description of module's purpose here]
-
 
 =head1 SYNOPSIS
 
     use Net::FTP::Rule;
 
-=for author to fill in:
-    Brief code example(s) here showing commonest usage(s).
-    This section will be as far as many users bother reading
-    so make it as educational and exeplary as possible.
+    # connect to the FTP site
+    my $ftp = Net::FTP::Rule->new( $ftp_site, $user, $password );
 
+    # define a visitor callback routine. It will recieve a
+    # Net::FTP::Rule::Entry object.
+    sub visitor { my ($entry) = @_ }
+
+    # use the Path::Iterator::Rule all() method to traverse the
+    # site;
+    $ftp->all( '/', \&visitor );
 
 =head1 DESCRIPTION
 
-=for author to fill in:
-    Write a full description of the module and its features here.
-    Use subsections (=head2, =head3) as appropriate.
+B<Net::FTP::Rule> is a subclass of L<Path::Iterator::Rule> which
+iterates over an FTP site rather than a local filesystem.
+
+See the documentation L<Path::Iterator::Rule> for how to filter and
+traverse paths.  When B<Net::FTP::Rule> passes a path to a callback or
+returns one from an iterator, it will be in the form of a
+L<Net::FTP::Rule::Entry> object.
+
+B<Net::FTP::Rule> uses L<Net::FTP> to connect to the FTP site.
+
+=head2 Symbolic Links
+
+At present, B<Net::FTP::Rule> does not handle symbolic links. It will
+output an error and skip them.
 
 
-=head1 INTERFACE
+=head1 ATTRIBUTES
 
-=for author to fill in:
-    Write a separate section listing the public components of the modules
-    interface. These normally consist of either subroutines that may be
-    exported, or methods that may be called on objects belonging to the
-    classes provided by the module.
-
-
-=head1 DIAGNOSTICS
-
-=for author to fill in:
-    List every single error and warning message that the module can
-    generate (even the ones that will "never happen"), with a full
-    explanation of each problem, one or more likely causes, and any
-    suggested remedies.
+B<Net::FTP::Rule> subclasses L<Path::Iter::Rule>. It is a hash based object
+and has the following additional attributes:
 
 =over
 
-=item C<< Error message here, perhaps with %s placeholders >>
+=item C<server>
 
-[Description of error here]
-
-=item C<< Another error message here >>
-
-[Description of error here]
-
-[Et cetera, et cetera]
+The B<Net::FTP> object representing the connection to the FTP server.
 
 =back
 
-
-=head1 CONFIGURATION AND ENVIRONMENT
-
-=for author to fill in:
-    A full explanation of any configuration system(s) used by the
-    module, including the names and locations of any configuration
-    files, and the meaning of any environment variables or properties
-    that can be set. These descriptions must also include details of any
-    configuration language used.
-
-Net::FTP::Rule requires no configuration files or environment variables.
-
-
-=head1 DEPENDENCIES
-
-=for author to fill in:
-    A list of all the other modules that this module relies upon,
-    including any restrictions on versions, and an indication whether
-    the module is part of the standard Perl distribution, part of the
-    module's distribution, or must be installed separately. ]
-
-None.
-
-
-=head1 INCOMPATIBILITIES
-
-=for author to fill in:
-    A list of any modules that this module cannot be used in conjunction
-    with. This may be due to name conflicts in the interface, or
-    competition for system or program resources, or due to internal
-    limitations of Perl (for example, many modules that use source code
-    filters are mutually incompatible).
-
-None reported.
-
-
-=head1 BUGS AND LIMITATIONS
-
-=for author to fill in:
-    A list of known problems with the module, together with some
-    indication Whether they are likely to be fixed in an upcoming
-    release. Also a list of restrictions on the features the module
-    does provide: data types that cannot be handled, performance issues
-    and the circumstances in which they may arise, practical
-    limitations on the size of data sets, special cases that are not
-    (yet) handled, etc.
-
-No bugs have been reported.
-
-Please report any bugs or feature requests to
-C<bug-net-ftp-rule@rt.cpan.org>, or through the web interface at
-L<http://rt.cpan.org/Public/Dist/Display.html?Name=Net-FTP-Rule>.
-
 =head1 SEE ALSO
 
-=for author to fill in:
-    Any other resources (e.g., modules or files) that are related.
-
-
-=head1 VERSION
-
-Version 0.01
-
-=head1 LICENSE AND COPYRIGHT
-
-Copyright (c) 2013 The Smithsonian Astrophysical Observatory
-
-Net::FTP::Rule is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or (at
-your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-=head1 AUTHOR
-
-Diab Jerius  E<lt>djerius@cpan.orgE<gt>
