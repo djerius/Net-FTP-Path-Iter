@@ -1,6 +1,9 @@
 requires "Class::Tiny" => "0";
+requires "File::Listing" => "0";
 requires "Net::FTP" => "0";
 requires "Path::Iterator::Rule" => "1.012";
+requires "experimental" => "0";
+requires "namespace::clean" => "0";
 requires "perl" => "5.010";
 
 on 'test' => sub {

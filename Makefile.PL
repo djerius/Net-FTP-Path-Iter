@@ -18,8 +18,11 @@ my %WriteMakefileArgs = (
   "NAME" => "Net::FTP::Rule",
   "PREREQ_PM" => {
     "Class::Tiny" => 0,
+    "File::Listing" => 0,
     "Net::FTP" => 0,
-    "Path::Iterator::Rule" => "1.012"
+    "Path::Iterator::Rule" => "1.012",
+    "experimental" => 0,
+    "namespace::clean" => 0
   },
   "TEST_REQUIRES" => {
     "ExtUtils::MakeMaker" => 0,
@@ -40,6 +43,7 @@ my %WriteMakefileArgs = (
 my %FallbackPrereqs = (
   "Class::Tiny" => 0,
   "ExtUtils::MakeMaker" => 0,
+  "File::Listing" => 0,
   "File::Spec" => 0,
   "IO::Handle" => 0,
   "IPC::Open3" => 0,
@@ -47,7 +51,9 @@ my %FallbackPrereqs = (
   "Path::Iterator::Rule" => "1.012",
   "Test2::Bundle::Extended" => 0,
   "Test::Mock::Net::FTP" => "0.02",
-  "Test::More" => 0
+  "Test::More" => 0,
+  "experimental" => 0,
+  "namespace::clean" => 0
 );
 
 
