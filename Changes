@@ -2,5 +2,6 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
 
+0.01      2017-05-03 15:43:41-04:00 America/New_York (TRIAL RELEASE)
+
    * Initial Public Release
-  
