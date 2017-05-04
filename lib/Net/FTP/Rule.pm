@@ -82,7 +82,7 @@ sub _defaults {
         follow_symlinks => 1,
         depthfirst      => 0,
         sorted          => 1,
-        loop_safe       => 0,
+        loop_safe       => 1,
         error_handler   => sub { die sprintf( "%s: %s", @_ ) },
         visitor         => undef,
     );
