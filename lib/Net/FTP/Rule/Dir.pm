@@ -101,7 +101,7 @@ sub _retrieve_attrs {
               if !$entry;
 
             croak( $self->path, ": expected directory, got $entry->{type}\n" )
-              unless $entry->type eq 'd';
+              unless $entry->{type} eq 'd';
 
         }
 
