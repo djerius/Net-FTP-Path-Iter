@@ -10,6 +10,31 @@ use File::Temp 'tempdir';
 use File::Path 'make_path';
 use File::Spec::Functions qw[ catfile catdir ];
 
+# work around bug in Test::Mock::Net::FTP v 0.02
+# https://rt.cpan.org/Ticket/Display.html?id=121532
+{
+    use File::Spec::Functions qw[ splitdir rootdir ];
+
+    no warnings 'redefine';
+    sub Test::Mock::Net::FTP::mock_default_cwd {
+        my ( $self, $dirs ) = @_;
+
+        if ( !defined $dirs ) {
+            $self->{mock_cwd} = rootdir();
+            $dirs = "";
+        }
+        elsif ( $dirs =~ m|^/| ) {
+            $self->{mock_cwd} = rootdir();
+        }
+
+        my $backup_cwd = $self->_mock_cwd;
+        for my $dir ( splitdir( $dirs ) ) {
+            $self->_mock_cwd_each( $dir );
+        }
+        $self->{mock_cwd} =~ s/^$self->{mock_server_root}//;  #for absolute path
+        return $self->_mock_check_pwd( $backup_cwd );
+    }
+}
 
 # create a fake FTP site with the following layout:
 # p
@@ -61,10 +86,16 @@ my $mock = mock 'Net::FTP' => (
             my $class = shift;
             return Test::Mock::Net::FTP->new( @_ );
         },
-      ]
+    ],
+
 );
 
-my $ftp = Net::FTP::Rule->new( 'net.ftp.rule', user => 'anonymous', password => 'secret' );
+
+my $ftp = Net::FTP::Rule->new(
+    'net.ftp.rule',
+    user     => 'anonymous',
+    password => 'secret'
+);
 
 my $expected = bag {
     item "$_ d" for qw[ . p p/a p/b p/c ];
@@ -101,6 +132,6 @@ ok(
 ) or die $@;
 
 
-is ( \@got, $expected, "listing" );
+is( \@got, $expected, "listing" );
 
 done_testing;
