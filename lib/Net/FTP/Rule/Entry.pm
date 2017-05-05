@@ -77,20 +77,42 @@ sub _get_entries {
 
     my ( $self, $path ) = @_;
 
-    my $listing = $self->server->dir( $path )
-      or croak( "error listing $path" );
+    my $server = $self->server;
+
+    my $pwd = $server->pwd;
+
+    # on some ftp servers, if $path is a symbolic link, dir($path)
+    # willl return a listing of $path's own entry, not of its
+    # contents.  as a work around, explicitly cwd($path),
+    # get the listing, then restore the working directory
 
     my @entries;
-    for my $entry ( parse_dir( $listing ) ) {
+    eval {
+        $server->cwd( $path )
+          or croak( "unable to chdir to ", $path, "\n" );
 
-        my %attr;
-        @attr{qw[ name type size mtime mode]} = @$entry;
-        $attr{parent}                         = $path;
-        $attr{_has_attrs}                      = 1;
+        my $listing = $server->dir( '.' )
+          or croak( "error listing $path" );
 
-        push @entries, \%attr;
+        for my $entry ( parse_dir( $listing ) ) {
 
-    }
+            my %attr;
+            @attr{qw[ name type size mtime mode]} = @$entry;
+            $attr{parent}                         = $path;
+            $attr{_has_attrs}                      = 1;
+
+            push @entries, \%attr;
+
+        }
+    };
+
+    my $err = $@;
+
+    $server->cwd( $pwd )
+      or croak( "unable to return to directory: $pwd\n" );
+
+    croak( $err ) if $err;
+
 
     return \@entries;
 

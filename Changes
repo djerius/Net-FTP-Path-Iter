@@ -2,6 +2,12 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
 
+  [BUG FIX]
+
+    * On some FTP servers, symlinked directories are treated as files
+      when listed, rather than as proper directories.
+
+
 0.01      2017-05-03 15:43:41-04:00 America/New_York (TRIAL RELEASE)
 
    * Initial Public Release
