@@ -2,6 +2,8 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
 
+0.02      2017-05-09 12:08:30-04:00 America/New_York (TRIAL RELEASE)
+
   [RENAME]
 
     * Module renamed to Net::FTP::Path::Iter
