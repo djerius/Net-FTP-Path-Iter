@@ -1,4 +1,4 @@
-package Net::FTP::Rule::Entry;
+package Net::FTP::Path::Iter::Entry;
 
 use 5.010;
 
@@ -182,7 +182,7 @@ directory
 
 =item l
 
-symbolic link. See however L<Net::FTP::Rule/Symbolic Links>
+symbolic link. See however L<Net::FTP::Path::Iter/Symbolic Links>
 
 =item ?
 
@@ -196,10 +196,10 @@ unknown
 
 =head1 DESCRIPTION
 
-A B<Net::FTP::Rule::Entry> object represents an entry in the remote
+A B<Net::FTP::Path::Iter::Entry> object represents an entry in the remote
 FTP filesystem.  It is rarely seen in the wild. Rather,
-L<Net::FTP::Rule> uses the subclasses B<Net::FTP::Rule::Entry::File>
-and B<Net::FTP::Rule::Entry::Dir> when passing paths to callbacks or
+L<Net::FTP::Path::Iter> uses the subclasses B<Net::FTP::Path::Iter::Entry::File>
+and B<Net::FTP::Path::Iter::Entry::Dir> when passing paths to callbacks or
 returning paths to iterators.  These subclasses have no unique methods
 or attributes of their own; they only have those of this, their parent
 class.

@@ -1,4 +1,4 @@
-package Net::FTP::Rule::File;
+package Net::FTP::Path::Iter::File;
 
 # ABSTRACT: Class representing a File
 
@@ -17,7 +17,7 @@ use File::Spec::Functions qw[ catfile ];
 
 use namespace::clean;
 
-use parent 'Net::FTP::Rule::Entry';
+use parent 'Net::FTP::Path::Iter::Entry';
 
 use constant is_file => 1;
 use constant is_dir  => 0;
@@ -52,7 +52,7 @@ sub _retrieve_attrs {
 
 =head1 DESCRIPTION
 
-B<Net::FTP::Rule::File> is a class representing a file entry. It is a subclass
-of L<Net::FTP::Rule::Entry>; see it for all available methods.
+B<Net::FTP::Path::Iter::File> is a class representing a file entry. It is a subclass
+of L<Net::FTP::Path::Iter::Entry>; see it for all available methods.
 
 

@@ -12,10 +12,10 @@ my %WriteMakefileArgs = (
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => 0
   },
-  "DISTNAME" => "Net-FTP-Rule",
+  "DISTNAME" => "Net-FTP-Path-Iter",
   "LICENSE" => "gpl",
   "MIN_PERL_VERSION" => "5.010",
-  "NAME" => "Net::FTP::Rule",
+  "NAME" => "Net::FTP::Path::Iter",
   "PREREQ_PM" => {
     "Class::Tiny" => 0,
     "File::Listing" => 0,

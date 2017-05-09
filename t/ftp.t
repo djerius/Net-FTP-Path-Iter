@@ -3,7 +3,7 @@
 
 use Test2::Bundle::Extended;
 
-use Net::FTP::Rule;
+use Net::FTP::Path::Iter;
 use Test::Mock::Net::FTP;
 
 use File::Temp 'tempdir';
@@ -91,7 +91,7 @@ my $mock = mock 'Net::FTP' => (
 );
 
 
-my $ftp = Net::FTP::Rule->new(
+my $ftp = Net::FTP::Path::Iter->new(
     'net.ftp.rule',
     user     => 'anonymous',
     password => 'secret'

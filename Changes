@@ -2,6 +2,10 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
 
+  [RENAME]
+
+    * Module renamed to Net::FTP::Path::Iter
+
   [BUG FIX]
 
     * On some FTP servers, symlinked directories are treated as files

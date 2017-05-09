@@ -1,4 +1,4 @@
-package Net::FTP::Rule::Dir;
+package Net::FTP::Path::Iter::Dir;
 
 # ABSTRACT: Class representing a Directory
 
@@ -16,9 +16,9 @@ use File::Spec::Functions qw[ catdir catfile ];
 
 use namespace::clean;
 
-use parent 'Net::FTP::Rule::Entry';
+use parent 'Net::FTP::Path::Iter::Entry';
 
-use Net::FTP::Rule::File;
+use Net::FTP::Path::Iter::File;
 
 use constant is_file => 0;
 use constant is_dir  => 1;
@@ -41,13 +41,13 @@ sub _children {
 
             when ( 'd' ) {
 
-                $obj = Net::FTP::Rule::Dir->new( %$entry, %attr,
+                $obj = Net::FTP::Path::Iter::Dir->new( %$entry, %attr,
                     path => catdir( $self->path, $entry->{name} ) );
             }
 
             when ( 'f' ) {
 
-                $obj = Net::FTP::Rule::File->new( %$entry, %attr,
+                $obj = Net::FTP::Path::Iter::File->new( %$entry, %attr,
                     path => catfile( $self->path, $entry->{name} ) );
             }
 

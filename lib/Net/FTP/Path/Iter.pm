@@ -1,4 +1,4 @@
-package Net::FTP::Rule;
+package Net::FTP::Path::Iter;
 
 # ABSTRACT: Iterative, recursive, FTP file finder
 
@@ -15,13 +15,13 @@ use File::Spec::Functions qw[ splitpath ];
 
 use parent 'Path::Iterator::Rule';
 
-use Net::FTP::Rule::Dir;
+use Net::FTP::Path::Iter::Dir;
 
 use namespace::clean;
 
 =method new
 
-  $ftp = Net::FTP::Rule->new( [$host], %options );
+  $ftp = Net::FTP::Path::Iter->new( [$host], %options );
 
 Open up a connection to an FTP host and log in.  The arguments
 are the same as for L<Net::FTP/new>, with the addition of two
@@ -115,7 +115,7 @@ sub _objectify {
         path => $path,
     );
 
-    return Net::FTP::Rule::Dir->new( server => $self->{server}, %attr );
+    return Net::FTP::Path::Iter::Dir->new( server => $self->{server}, %attr );
 }
 
 sub _children {
@@ -144,13 +144,13 @@ __END__
 
 =head1 SYNOPSIS
 
-    use Net::FTP::Rule;
+    use Net::FTP::Path::Iter;
 
     # connect to the FTP site
-    my $ftp = Net::FTP::Rule->new( $ftp_site, $user, $password );
+    my $ftp = Net::FTP::Path::Iter->new( $ftp_site, $user, $password );
 
     # define a visitor callback routine. It will recieve a
-    # Net::FTP::Rule::Entry object.
+    # Net::FTP::Path::Iter::Entry object.
     sub visitor { my ($entry) = @_ }
 
     # use the Path::Iterator::Rule all() method to traverse the
@@ -159,25 +159,25 @@ __END__
 
 =head1 DESCRIPTION
 
-B<Net::FTP::Rule> is a subclass of L<Path::Iterator::Rule> which
+B<Net::FTP::Path::Iter> is a subclass of L<Path::Iterator::Rule> which
 iterates over an FTP site rather than a local filesystem.
 
 See the documentation L<Path::Iterator::Rule> for how to filter and
-traverse paths.  When B<Net::FTP::Rule> passes a path to a callback or
+traverse paths.  When B<Net::FTP::Path::Iter> passes a path to a callback or
 returns one from an iterator, it will be in the form of a
-L<Net::FTP::Rule::Entry> object.
+L<Net::FTP::Path::Iter::Entry> object.
 
-B<Net::FTP::Rule> uses L<Net::FTP> to connect to the FTP site.
+B<Net::FTP::Path::Iter> uses L<Net::FTP> to connect to the FTP site.
 
 =head2 Symbolic Links
 
-At present, B<Net::FTP::Rule> does not handle symbolic links. It will
+At present, B<Net::FTP::Path::Iter> does not handle symbolic links. It will
 output an error and skip them.
 
 
 =head1 ATTRIBUTES
 
-B<Net::FTP::Rule> subclasses L<Path::Iter::Rule>. It is a hash based object
+B<Net::FTP::Path::Iter> subclasses L<Path::Iter::Rule>. It is a hash based object
 and has the following additional attributes:
 
 =over
