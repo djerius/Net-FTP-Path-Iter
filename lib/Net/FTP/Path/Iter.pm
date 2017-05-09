@@ -8,7 +8,7 @@ use strict;
 use warnings;
 use Carp;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use Net::FTP;
 use File::Spec::Functions qw[ splitpath ];
