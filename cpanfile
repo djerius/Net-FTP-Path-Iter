@@ -12,7 +12,7 @@ on 'test' => sub {
   requires "IO::Handle" => "0";
   requires "IPC::Open3" => "0";
   requires "Test2::Bundle::Extended" => "0";
-  requires "Test::Mock::Net::FTP" => "0.02";
+  requires "Test::Mock::Net::FTP" => "0.03";
   requires "Test::More" => "0";
 };
 

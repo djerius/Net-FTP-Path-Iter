@@ -30,7 +30,7 @@ my %WriteMakefileArgs = (
     "IO::Handle" => 0,
     "IPC::Open3" => 0,
     "Test2::Bundle::Extended" => 0,
-    "Test::Mock::Net::FTP" => "0.02",
+    "Test::Mock::Net::FTP" => "0.03",
     "Test::More" => 0
   },
   "VERSION" => "0.04",
@@ -50,7 +50,7 @@ my %FallbackPrereqs = (
   "Net::FTP" => 0,
   "Path::Iterator::Rule" => "1.012",
   "Test2::Bundle::Extended" => 0,
-  "Test::Mock::Net::FTP" => "0.02",
+  "Test::Mock::Net::FTP" => "0.03",
   "Test::More" => 0,
   "experimental" => 0,
   "namespace::clean" => 0
