@@ -33,7 +33,7 @@ my %WriteMakefileArgs = (
     "Test::Mock::Net::FTP" => "0.02",
     "Test::More" => 0
   },
-  "VERSION" => "0.02",
+  "VERSION" => "0.04",
   "test" => {
     "TESTS" => "t/*.t"
   }
