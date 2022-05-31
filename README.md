@@ -71,17 +71,17 @@ and has the following additional attributes:
 
 ## Bugs
 
-Please report any bugs or feature requests to bug-{{ lc $dist->name }}@rt.cpan.org  or through the web interface at: https://rt.cpan.org/Public/Dist/Display.html?Name={{ $dist->name }}
+Please report any bugs or feature requests to bug-net-ftp-path-iter@rt.cpan.org  or through the web interface at: https://rt.cpan.org/Public/Dist/Display.html?Name=Net-FTP-Path-Iter
 
 ## Source
 
 Source is available at
 
-    https://gitlab.com/djerius/{{ lc $dist->name }}
+    https://gitlab.com/djerius/net-ftp-path-iter
 
 and may be cloned from
 
-    https://gitlab.com/djerius/{{ lc $dist->name }}.git
+    https://gitlab.com/djerius/net-ftp-path-iter.git
 
 # AUTHOR
 

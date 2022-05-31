@@ -17,7 +17,7 @@ more welcome.
 The public repository for this code is managed with git and is hosted at GitLab.
 It is available via the web at:
 
-  https://gitlab.com/djerius/{{ lc $dist->name }}
+  https://gitlab.com/djerius/net-ftp-path-iter
 
 You can submit code changes by forking the repository, pushing your code
 changes to your clone, and then submitting a merge request. Detailed
@@ -111,11 +111,11 @@ can submit an issue report
 
 at this website:
 
-  https://rt.cpan.org/Public/Dist/Display.html?Name={{ $dist->name }}
+  https://rt.cpan.org/Public/Dist/Display.html?Name=Net-FTP-Path-Iter
 
 or via email to:
 
-  bug-{{ lc $dist->name }}@rt.cpan.org
+  bug-net-ftp-path-iter@rt.cpan.org
 
 or via email to:
 

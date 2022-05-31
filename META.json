@@ -143,13 +143,13 @@
    "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
-         "mailto" : "bug-{{ lc $dist->name }}@rt.cpan.org",
-         "web" : "https://rt.cpan.org/Public/Dist/Display.html?Name={{ $dist->name }}"
+         "mailto" : "bug-net-ftp-path-iter@rt.cpan.org",
+         "web" : "https://rt.cpan.org/Public/Dist/Display.html?Name=Net-FTP-Path-Iter"
       },
       "repository" : {
          "type" : "git",
-         "url" : "https://gitlab.com/djerius/{{ lc $dist->name }}.git",
-         "web" : "https://gitlab.com/djerius/{{ lc $dist->name }}"
+         "url" : "https://gitlab.com/djerius/net-ftp-path-iter.git",
+         "web" : "https://gitlab.com/djerius/net-ftp-path-iter"
       }
    },
    "version" : "0.06",
