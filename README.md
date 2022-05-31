@@ -4,7 +4,7 @@ Net::FTP::Path::Iter - Iterative, recursive, FTP file finder
 
 # VERSION
 
-version 0.06
+version 0.07
 
 # SYNOPSIS
 

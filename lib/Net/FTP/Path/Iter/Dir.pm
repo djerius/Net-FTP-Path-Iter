@@ -7,7 +7,7 @@ use strict;
 use warnings;
 use experimental 'switch';
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use Carp;
 use Fcntl qw[ :mode ];
