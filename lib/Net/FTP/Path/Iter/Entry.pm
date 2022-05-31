@@ -6,7 +6,6 @@ use 5.010;
 
 use strict;
 use warnings;
-use experimental 'switch';
 
 our $VERSION = '0.05';
 
@@ -25,7 +24,7 @@ use overload
 
 use Class::Tiny qw[
   name type size mtime mode parent server path
-  ], { _has_attrs => 0 };
+], { _has_attrs => 0 };
 
 =begin pod_coverage
 
@@ -51,25 +50,21 @@ sub _statit {
     $self->_retrieve_attrs
       unless $self->_has_attrs;
 
-    for ( $op ) {
+    if    ( $op eq 'd' ) { return $self->is_dir }
 
-        when ( 'd' ) { return $self->is_dir }
+    elsif ( $op eq 'f' ) { return $self->is_file }
 
-        when ( 'f' ) { return $self->is_file }
+    elsif ( $op eq 's' ) { return $self->size }
 
-        when ( 's' ) { return $self->size }
+    elsif ( $op eq 'z' ) { return $self->size != 0 }
 
-        when ( 'z' ) { return $self->size != 0 }
+    elsif ( $op eq 'r' ) { return S_IROTH & $self->mode }
 
-        when ( 'r' ) { return S_IROTH & $self->mode }
+    elsif ( $op eq 'R' ) { return S_IROTH & $self->mode }
 
-        when ( 'R' ) { return S_IROTH & $self->mode }
+    elsif ( $op eq 'l' ) { return 0 }
 
-        when ( 'l' ) { return 0 }
-
-        default { croak( "unsupported file test: -$op\n" ) }
-
-    }
+    else { croak( "unsupported file test: -$op\n" ) }
 
 }
 
@@ -99,7 +94,7 @@ sub _get_entries {
             my %attr;
             @attr{qw[ name type size mtime mode]} = @$entry;
             $attr{parent}                         = $path;
-            $attr{_has_attrs}                      = 1;
+            $attr{_has_attrs}                     = 1;
 
             push @entries, \%attr;
 
